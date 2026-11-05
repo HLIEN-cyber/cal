@@ -1,1 +1,64 @@
-
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IBSH Calendar</title>
+<style>body{font:16px system-ui;max-width:900px;margin:40px auto;padding:0 20px;color:#163344;background:#f4f8fa}header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}button,input,textarea{font:inherit;padding:10px}button{cursor:pointer}section,form{background:white;padding:20px;margin:20px 0;border-radius:12px}label{display:block;margin:12px 0}input,textarea{display:block;box-sizing:border-box;width:100%}article{border-top:1px solid #dae4ea;padding:15px 0}article p{white-space:pre-wrap}#status{min-height:24px}[hidden]{display:none!important}</style>
+<header><h1>IBSH Calendar</h1><button id="login">Sign in with Google</button><button id="logout" hidden>Sign out</button><span id="user"></span></header>
+<p id="status" role="status" aria-live="polite"></p>
+<section><h2>Notices</h2><div id="notices">Loading notices…</div></section>
+<section><h2>Events</h2><div id="events">Loading events…</div></section>
+<div id="editor" hidden><h2>Publish</h2><form id="noticeForm"><h3>New notice</h3><label>Title<input name="title" required maxlength="120"></label><label>Message<textarea name="body" required maxlength="5000"></textarea></label><button>Publish notice</button></form>
+<form id="eventForm"><h3>New event</h3><label>Title<input name="title" required maxlength="120"></label><label>Description<textarea name="body" required maxlength="5000"></textarea></label><label>Date<input name="date" type="date" required></label><button>Publish event</button></form></div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onIdTokenChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import { getDatabase, ref, onValue, push, set, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
+const firebaseConfig = {
+  "apiKey": "AIzaSyA2BXZXk1afRU-Lwadh_b5ekeXc1ARIEaQ",
+  "authDomain": "ibshcal.firebaseapp.com",
+  "databaseURL": "https://ibshcal-default-rtdb.firebaseio.com",
+  "projectId": "ibshcal",
+  "storageBucket": "ibshcal.firebasestorage.app",
+  "messagingSenderId": "938779191555",
+  "appId": "1:938779191555:web:0f934e8b28d1b78ead2136",
+  "measurementId": "G-J3JGWXTXXW"
+};
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getDatabase(app);
+const $ = id => document.getElementById(id);
+let admin = false;
+const cache = {notices:null, events:null};
+function report(error) { $('status').textContent = error.message || String(error); }
+$('login').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(report);
+$('logout').onclick = () => signOut(auth).catch(report);
+onIdTokenChanged(auth, async user => {
+  admin = false; $('editor').hidden = true;
+  $('login').hidden = !!user; $('logout').hidden = !user;
+  $('user').textContent = user?.displayName || user?.email || '';
+  try { const token = user ? await user.getIdTokenResult() : null; if(auth.currentUser !== user) return; admin = token?.claims.admin === true; $('editor').hidden = !admin; }
+  catch(error) { report(error); }
+  for (const kind of ['notices','events']) if(cache[kind] !== null) render(kind);
+});
+function render(kind) {
+  const container = $(kind); container.replaceChildren();
+  const entries = Object.entries(cache[kind]);
+  entries.sort((a,b) => kind === 'events' ? a[1].date.localeCompare(b[1].date) : b[1].createdAt-a[1].createdAt);
+  if(!entries.length) { container.textContent = `No ${kind} yet.`; return; }
+  for(const [id,item] of entries) {
+    const article = document.createElement('article'), title = document.createElement('h3'), body = document.createElement('p');
+    title.textContent = item.title; body.textContent = item.body; article.append(title);
+    if(kind === 'events') { const date = document.createElement('time'); date.dateTime = item.date; date.textContent = item.date; article.append(date); }
+    article.append(body);
+    if(admin) { const button = document.createElement('button'); button.textContent = 'Delete'; button.onclick = async () => { if(!confirm(`Delete “${item.title}”?`)) return; button.disabled = true; try { await remove(ref(db,`${kind}/${id}`)); } catch(error) { report(error); button.disabled = false; } }; article.append(button); }
+    container.append(article);
+  }
+}
+for(const kind of ['notices','events']) onValue(ref(db,kind), snapshot => { cache[kind] = snapshot.val() || {}; render(kind); }, error => { $(kind).textContent = `Unable to load ${kind}.`; report(error); });
+for(const [formId,kind] of [['noticeForm','notices'],['eventForm','events']]) $(formId).onsubmit = async event => {
+  event.preventDefault(); const form = event.currentTarget, button = form.querySelector('button');
+  if(!admin || !auth.currentUser) return report('Administrator access required.');
+  const data = new FormData(form), title = data.get('title').trim(), body = data.get('body').trim();
+  if(!title || !body) return report('Enter a title and message.');
+  const item = {title,body,createdAt:serverTimestamp(),authorUid:auth.currentUser.uid};
+  if(kind === 'events') item.date = data.get('date');
+  button.disabled = true;
+  try { await set(push(ref(db,kind)),item); form.reset(); $('status').textContent = 'Published.'; } catch(error) { report(error); } finally { button.disabled = false; }
+};
+</script></html>
