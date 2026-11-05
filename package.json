@@ -1,0 +1,13 @@
+{
+  "name": "ibshcal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "firebase emulators:exec --only database --project demo-ibshcal \"node --test tests/permissions.test.js\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "4.0.1",
+    "firebase": "11.10.0",
+    "firebase-tools": "14.22.0"
+  }
+}

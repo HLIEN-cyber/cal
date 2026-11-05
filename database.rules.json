@@ -1,0 +1,53 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "notices": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && auth.token.admin === true",
+        "title": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "body": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000"
+        },
+        "authorUid": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now && newData.val() > 0"
+        },
+        "$other": {
+          ".validate": false
+        },
+        ".validate": "newData.hasChildren([\"title\", \"body\", \"authorUid\", \"createdAt\"])"
+      }
+    },
+    "events": {
+      ".read": true,
+      "$id": {
+        ".write": "auth != null && auth.token.admin === true",
+        "title": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "body": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000"
+        },
+        "authorUid": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now && newData.val() > 0"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "date": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)"
+        },
+        ".validate": "newData.hasChildren([\"title\", \"body\", \"authorUid\", \"createdAt\", \"date\"])"
+      }
+    }
+  }
+}
