@@ -1,17 +1,185 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IBSH Calendar</title>
-<style>body{font:16px system-ui;max-width:900px;margin:40px auto;padding:0 20px;color:#163344;background:#f4f8fa}header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}button,input,textarea{font:inherit;padding:10px}button{cursor:pointer}section,form{background:white;padding:20px;margin:20px 0;border-radius:12px}label{display:block;margin:12px 0}input,textarea{display:block;box-sizing:border-box;width:100%}article{border-top:1px solid #dae4ea;padding:15px 0}article p{white-space:pre-wrap}#status{min-height:24px}[hidden]{display:none!important}</style>
-<header><h1>IBSH Calendar</h1><button id="login">Sign in with Google</button><button id="logout" hidden>Sign out</button><span id="user"></span></header>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IBSH Calendar</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#203e35;background:#f5f5ee;line-height:1.5}*{box-sizing:border-box}body{margin:0}header{background:#214f40;color:white;padding:28px max(24px,calc((100vw - 1120px)/2))}header small{letter-spacing:.16em;color:#d6e7bc}h1{font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.04em;margin:12px 0}header p{color:#dce8df;max-width:600px}main{max-width:1168px;margin:auto;padding:28px 24px}button,select{font:inherit;min-height:44px;border:1px solid #bbc9bd;border-radius:9px;background:white;color:#203e35;padding:8px 14px;cursor:pointer}button:hover{background:#eaf0df}button:focus-visible,select:focus-visible{outline:3px solid #c78025;outline-offset:3px}.toolbar,.section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.toolbar{margin-bottom:28px}.filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.badge{font-size:.8rem;background:#e9edcf;color:#38523b;border-radius:30px;padding:5px 10px;display:inline-block}.columns{display:grid;grid-template-columns:1fr 1.65fr;gap:24px}section{min-width:0}h2{font-size:1.25rem;margin:0}h3{margin:8px 0;font-size:1.05rem}.sub{font-size:.87rem;color:#607369;margin:5px 0 18px}.card,.calendar{background:white;border:1px solid #dce2d6;border-radius:16px}.card{padding:20px;margin-bottom:12px}.card p{margin:8px 0;font-size:.94rem}.meta{color:#607369;font-size:.8rem}.category{color:#55734a;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.calendar{padding:20px}.nav{display:flex;gap:6px}.nav button{padding:6px 12px}.weekdays,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.weekdays{margin-top:24px;text-align:center;font-size:.75rem;color:#607369}.day{min-height:78px;border:0;border-top:1px solid #e7ebdf;border-radius:0;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:6px;background:transparent}.day.selected{background:#e9efdf;border-radius:8px}.day.today .number{background:#214f40;color:white;border-radius:50%}.number{width:28px;height:28px;display:grid;place-items:center}.dots{display:flex;gap:3px}.dot{width:5px;height:5px;background:#bd7927;border-radius:50%}.empty{border-top:1px solid #e7ebdf}.agenda{margin-top:22px;border-top:1px solid #e7ebdf;padding-top:18px}.event{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #edf0e7}.event time{min-width:72px;color:#64745e;font-size:.85rem}.event strong{display:block}.event p{margin:3px 0;font-size:.86rem;color:#607369}footer{padding:30px 0;color:#607369;font-size:.8rem}.week-nav{display:flex;gap:5px;margin-bottom:12px}@media(max-width:780px){.columns{grid-template-columns:1fr}.calendar-section{order:-1}main{padding:20px 16px}header{padding:24px}.calendar{padding:14px}.day{min-height:58px}.toolbar{align-items:flex-start}.section-head{gap:8px}}@media(prefers-reduced-motion:no-preference){button{transition:background .15s}}
+
+[hidden]{display:none!important}.account-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}#identity{overflow-wrap:anywhere}#access,#status{font-size:.9rem;color:#607369}#status{min-height:1.5em;margin:6px 0 22px;overflow-wrap:anywhere}a{color:#315f4c}#editor{background:#fff;border:1px solid #dce2d6;border-radius:16px;padding:20px;margin-bottom:24px}summary{cursor:pointer;font-weight:700;min-height:28px}form h2{margin:18px 0}form label{display:block;margin:12px 0}form input,form textarea,form select{display:block;width:100%;font:inherit;box-sizing:border-box;padding:10px;margin-top:5px;border:1px solid #bbc9bd;border-radius:8px;background:white;color:#203e35}form textarea{resize:vertical}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.form-actions,.record-actions{display:flex;gap:8px;flex-wrap:wrap}.record-actions{margin-top:12px}.record-actions button{font-size:.82rem;min-height:40px;padding:5px 12px}.event-content{min-width:0;flex:1}.card h3,.card p,.event strong,.event p{overflow-wrap:anywhere}button:disabled{opacity:.6;cursor:wait}#data-mode{white-space:nowrap}#mode-link{font-size:.85rem}@media(max-width:500px){.form-grid{grid-template-columns:1fr}.event{flex-wrap:wrap}.event time{min-width:60px}.account-bar{gap:8px}.filters{gap:8px}}
+</style>
+</head>
+<body>
+<header><small>IBSH / SCHOOL NOTICEBOARD</small><h1>A little more connected.</h1><p>Your school week, in one place. Catch up on classroom news and make room for what’s coming next.</p></header>
+<main>
+<div class="account-bar" aria-label="Account"><button id="login" disabled>Sign in with Google</button><button id="logout" hidden>Sign out</button><span id="identity"></span><span id="access">Read-only access</span><button id="copy-uid" hidden>Copy my UID</button></div>
 <p id="status" role="status" aria-live="polite"></p>
-<section><h2>Notices</h2><div id="notices">Loading notices…</div></section>
-<section><h2>Events</h2><div id="events">Loading events…</div></section>
-<div id="editor" hidden><h2>Publish</h2><form id="noticeForm"><h3>New notice</h3><label>Title<input name="title" required maxlength="120"></label><label>Message<textarea name="body" required maxlength="5000"></textarea></label><button>Publish notice</button></form>
-<form id="eventForm"><h3>New event</h3><label>Title<input name="title" required maxlength="120"></label><label>Description<textarea name="body" required maxlength="5000"></textarea></label><label>Date<input name="date" type="date" required></label><button>Publish event</button></form></div>
+<div class="toolbar"><div><strong>School noticeboard</strong><div class="meta">A happy place to learn, together.</div></div><div class="filters"><span class="badge" id="data-mode">Connecting…</span><a id="mode-link" href="?demo=1">Demo preview</a><label for="grade">Grade</label><select id="grade"><option value="all">All grades</option><option value="K">Kindergarten</option><option value="1">Grade 1</option><option value="2">Grade 2</option><option value="3">Grade 3</option><option value="4">Grade 4</option><option value="5">Grade 5</option></select></div></div>
+<details id="editor" hidden><summary>Add or edit school content</summary>
+<form id="content-form"><h2 id="form-title">New notice or event</h2><div class="form-grid">
+<label>Content type<select id="content-kind" name="kind"><option value="notices">Notice</option><option value="events">Event</option></select></label>
+<label>Date<input id="content-date" name="date" type="date" min="1900-01-01" max="9999-12-31" required></label>
+<label>Grade<select name="grade" id="content-grade"><option value="all">All grades</option><option value="K">Kindergarten</option><option value="1">Grade 1</option><option value="2">Grade 2</option><option value="3">Grade 3</option><option value="4">Grade 4</option><option value="5">Grade 5</option></select></label>
+<label id="type-field">Notice category<input name="type" maxlength="60" value="School news"></label>
+<label class="event-field" hidden>Time<input name="time" type="time"></label><label class="event-field" hidden>Location<input name="place" maxlength="200"></label>
+</div><label>Title<input name="title" required maxlength="120"></label><label>Details<textarea name="body" required maxlength="5000" rows="4"></textarea></label>
+<div class="form-actions"><button id="save-content" type="submit">Save notice</button><button id="cancel-edit" type="button">Cancel</button></div></form></details>
+<div class="columns"><section aria-labelledby="notices-title"><h2 id="notices-title">This week’s notices</h2><p class="sub" id="week-label"></p><div class="week-nav"><button id="prev-week" aria-label="Previous week">←</button><button id="this-week">This week</button><button id="next-week" aria-label="Next week">→</button></div><div id="notices" aria-live="polite"></div></section>
+<section class="calendar-section" aria-labelledby="month-label"><div class="calendar"><div class="section-head"><h2 id="month-label"></h2><div class="nav"><button id="prev" aria-label="Previous month">←</button><button id="today">Today</button><button id="next" aria-label="Next month">→</button></div></div><div class="weekdays" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div id="calendar" class="grid" aria-label="Choose a calendar date"></div><p class="meta">● Event scheduled · Select a date for details</p><div class="agenda" aria-live="polite"><h3 id="date-label"></h3><div id="events"></div></div></div></section></div><footer>IBSH Calendar · School notices and events.<br>All dates and times use your device’s local time.</footer></main>
+
+<script id="calendar-core">
+window.CalendarCore = (() => {
+  const grades = ['all', 'K', '1', '2', '3', '4', '5'];
+  const dayOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dateKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  function parseDate(value) {
+    if(typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const [year,month,day] = value.split('-').map(Number);
+    if(year < 1900 || year > 9999) return null;
+    const d = new Date(year,month-1,day);
+    return dateKey(d) === value ? d : null;
+  }
+  function normalizeRecord(kind, id, value) {
+    if(!value || typeof value !== 'object' || typeof value.title !== 'string') return null;
+    const created = Number.isFinite(value.createdAt) ? new Date(value.createdAt) : null;
+    const date = parseDate(value.date) || (kind === 'notices' && created && !isNaN(created) ? dayOnly(created) : null);
+    if(!date) return null;
+    return {id,kind,date,title:value.title,body:typeof value.body==='string'?value.body:'',grade:grades.includes(value.grade)?value.grade:'all',type:typeof value.type==='string'?value.type:'School news',time:typeof value.time==='string'?value.time:'',place:typeof value.place==='string'?value.place:'',authorUid:value.authorUid,createdAt:value.createdAt};
+  }
+  function canEdit(role, uid, record) {
+    return !!uid && (role === 'admin' || (role === 'contributor' && record.authorUid === uid));
+  }
+  function payloadFrom(values, kind, uid, createdAt) {
+    if(!uid) throw new Error('Sign in before saving.');
+    const title=String(values.title||'').trim(), body=String(values.body||'').trim();
+    if(!title || title.length>120) throw new Error('Enter a title of 1–120 characters.');
+    if(!body || body.length>5000) throw new Error('Enter details of 1–5000 characters.');
+    if(!parseDate(values.date)) throw new Error('Choose a valid calendar date.');
+    if(!grades.includes(values.grade)) throw new Error('Choose a grade from the list.');
+    const payload={title,body,date:values.date,grade:values.grade,authorUid:uid,createdAt};
+    if(kind==='notices') {
+      const type=String(values.type||'School news').trim() || 'School news';
+      if(type.length>60) throw new Error('Keep the category within 60 characters.');
+      payload.type=type;
+    } else if(kind==='events') {
+      const time=String(values.time||''), place=String(values.place||'').trim();
+      if(time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error('Choose a valid event time.');
+      if(place.length>200) throw new Error('Keep the location within 200 characters.');
+      payload.time=time;payload.place=place;
+    } else throw new Error('Choose Notice or Event.');
+    return payload;
+  }
+  function timeMinutes(value) {
+    const match=String(value).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if(!match) return -1;
+    let hour=Number(match[1]);
+    if(match[3]) hour=hour%12+(match[3].toUpperCase()==='PM'?12:0);
+    return hour*60+Number(match[2]);
+  }
+  return {grades,dayOnly,dateKey,parseDate,normalizeRecord,canEdit,payloadFrom,timeMinutes};
+})();
+
+</script>
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onIdTokenChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
-import { getDatabase, ref, onValue, push, set, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js';
-const firebaseConfig = {
+const {dayOnly,dateKey,parseDate,normalizeRecord,canEdit,payloadFrom,timeMinutes} = window.CalendarCore;
+const $=id=>document.getElementById(id), form=$('content-form');
+const demoMode=new URLSearchParams(location.search).get('demo')==='1';
+const today=dayOnly(new Date());
+let month=new Date(today.getFullYear(),today.getMonth(),1),selected=dayOnly(today),week=dayOnly(today);
+week.setDate(week.getDate()-((week.getDay()+6)%7));
+const base=dayOnly(week),offset=n=>{const d=dayOnly(base);d.setDate(d.getDate()+n);return d;};
+let notices=[],events=[],user=null,role=null,editing=null,saving=false,sdk=null,db=null,auth=null,stopMembership=null;
+const loaded={notices:demoMode,events:demoMode},errors={notices:false,events:false};
+const format=(d,options)=>d.toLocaleDateString('en-US',options);
+const gradeLabel=g=>g==='all'?'All grades':g==='K'?'Kindergarten':`Grade ${g}`;
+const matches=e=>$('grade').value==='all'||e.grade==='all'||e.grade===$('grade').value;
+function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
+function report(message){$('status').textContent=typeof message==='string'?message:(message?.message||'Something went wrong. Please try again.');}
+function fail(error){
+  const code=String(error?.code||'');
+  if(/permission|denied/i.test(code+' '+error?.message)) report('Access denied. Ask the project owner to check your membership and the published database rules.');
+  else if(code==='auth/unauthorized-domain') report('Google sign-in is not enabled for this website hostname. Ask the project owner to add it in Firebase Authentication settings.');
+  else if(code==='auth/popup-closed-by-user') report('Sign-in cancelled.');
+  else report(error);
+}
+function actionButtons(record){
+  const row=el('div',undefined,'record-actions');
+  if(demoMode||!canEdit(role,user?.uid,record)) return row;
+  const edit=el('button','Edit'),del=el('button','Delete');edit.type=del.type='button';
+  edit.onclick=()=>editRecord(record);del.onclick=()=>deleteRecord(record,del);row.append(edit,del);return row;
+}
+function emptyMessage(kind,normal){return errors[kind]?`Unable to load ${kind}. Check the connection and Firebase rules.`:!loaded[kind]?`Loading ${kind}…`:normal;}
+function render(){
+  const end=dayOnly(week);end.setDate(end.getDate()+7);
+  const last=dayOnly(end);last.setDate(last.getDate()-1);
+  $('week-label').textContent=`${format(week,{month:'short',day:'numeric'})} – ${format(last,{month:'short',day:'numeric',year:'numeric'})}`;
+  const ns=notices.filter(n=>n.date>=week&&n.date<end&&matches(n)).sort((a,b)=>a.date-b.date||(b.createdAt||0)-(a.createdAt||0));
+  $('notices').replaceChildren();
+  if(!ns.length)$('notices').append(el('div',emptyMessage('notices','No notices for this week and grade.'),'card'));
+  for(const n of ns){const card=el('article',undefined,'card');card.append(el('span',n.type,'category'),el('h3',n.title),el('p',n.body),el('div',`${gradeLabel(n.grade)} · ${format(n.date,{month:'short',day:'numeric'})}`,'meta'),actionButtons(n));$('notices').append(card);}
+  $('month-label').textContent=format(month,{month:'long',year:'numeric'});$('calendar').replaceChildren();
+  for(let i=0;i<month.getDay();i++)$('calendar').append(el('div',undefined,'empty'));
+  for(let n=1,count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();n<=count;n++){
+    const d=new Date(month.getFullYear(),month.getMonth(),n),es=events.filter(e=>dateKey(e.date)===dateKey(d)&&matches(e)),b=el('button',undefined,`day ${dateKey(d)===dateKey(selected)?'selected':''} ${dateKey(d)===dateKey(today)?'today':''}`);
+    b.type='button';b.setAttribute('aria-label',`${format(d,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}, ${es.length} events`);b.setAttribute('aria-pressed',String(dateKey(d)===dateKey(selected)));if(dateKey(d)===dateKey(today))b.setAttribute('aria-current','date');
+    const dots=el('span',undefined,'dots');dots.setAttribute('aria-hidden','true');for(const e of es)dots.append(el('span',undefined,'dot'));b.append(el('span',String(n),'number'),dots);
+    b.onclick=()=>{selected=d;render();$('calendar').children[month.getDay()+n-1]?.focus();};$('calendar').append(b);
+  }
+  $('date-label').textContent=format(selected,{weekday:'long',month:'long',day:'numeric'});$('events').replaceChildren();
+  const es=events.filter(e=>dateKey(e.date)===dateKey(selected)&&matches(e)).sort((a,b)=>timeMinutes(a.time)-timeMinutes(b.time));
+  if(!es.length)$('events').append(el('p',emptyMessage('events','No events scheduled for this date and grade.'),'sub'));
+  for(const e of es){const article=el('div',undefined,'event'),time=el('time',e.time||'All day'),detail=el('div',undefined,'event-content');time.dateTime=dateKey(e.date)+(e.time?'T'+e.time:'');detail.append(el('strong',e.title),el('p',[e.place,gradeLabel(e.grade)].filter(Boolean).join(' · ')));if(e.body)detail.append(el('p',e.body));detail.append(actionButtons(e));article.append(time,detail);$('events').append(article);}
+}
+function updateFormType(){const isEvent=$('content-kind').value==='events';$('type-field').hidden=isEvent;for(const z of document.querySelectorAll('.event-field'))z.hidden=!isEvent;$('save-content').textContent=editing?'Save changes':isEvent?'Save event':'Save notice';}
+function resetForm(){editing=null;form.reset();$('content-kind').disabled=false;$('content-date').value=dateKey(today);$('form-title').textContent='New notice or event';updateFormType();}
+function refreshAccess(){
+  const approved=!!user&&['admin','contributor'].includes(role)&&!demoMode;
+  $('login').hidden=!!user||demoMode;$('logout').hidden=!user;$('copy-uid').hidden=!user;
+  $('identity').textContent=user?(user.displayName||user.email||'Signed-in user'):'';
+  $('access').textContent=demoMode?'Preview only':!user?'Read-only access':role==='admin'?'Administrator':role==='contributor'?'Contributor':'Waiting for project-owner approval';
+  $('editor').hidden=!approved;
+  if(!approved){resetForm();$('editor').open=false;}
+  else if(editing&&!canEdit(role,user.uid,editing)){resetForm();$('editor').open=false;}
+  render();
+}
+function editRecord(record){if(saving||!canEdit(role,user?.uid,record))return;editing=record;$('editor').open=true;$('content-kind').value=record.kind;$('content-kind').disabled=true;$('form-title').textContent=`Edit ${record.kind==='events'?'event':'notice'}`;for(const k of ['title','body','grade','type','time','place'])form.elements[k].value=record[k]||'';$('content-date').value=dateKey(record.date);updateFormType();$('editor').scrollIntoView({behavior:'smooth',block:'start'});form.elements.title.focus();}
+async function deleteRecord(record,button){
+  if(saving||!canEdit(role,user?.uid,record)||!sdk||!confirm(`Delete “${record.title}”?`))return;
+  button.disabled=true;
+  try{await sdk.remove(sdk.ref(db,`${record.kind}/${record.id}`));if(editing?.id===record.id&&editing.kind===record.kind)resetForm();report('Deleted.');}catch(e){fail(e);}finally{button.disabled=false;}
+}
+form.onsubmit=async event=>{
+  event.preventDefault();if(saving||demoMode||!sdk||!user||!['admin','contributor'].includes(role))return report('An approved account is required to save.');
+  const current=editing,kind=$('content-kind').value,uid=user.uid;
+  if(current&&!canEdit(role,uid,current))return report('You cannot edit this record.');
+  try{
+    const values=Object.fromEntries(new FormData(form));
+    const payload=payloadFrom(values,kind,current?current.authorUid:uid,current?current.createdAt:sdk.serverTimestamp());
+    const target=current?sdk.ref(db,`${kind}/${current.id}`):sdk.push(sdk.ref(db,kind));
+    saving=true;$('save-content').disabled=true;$('cancel-edit').disabled=true;
+    await (current?sdk.update(target,payload):sdk.set(target,payload));
+    const date=parseDate(payload.date);selected=date;month=new Date(date.getFullYear(),date.getMonth(),1);week=dayOnly(date);week.setDate(week.getDate()-((week.getDay()+6)%7));$('grade').value='all';
+    resetForm();render();report('Saved. The record is available on other devices.');
+  }catch(e){fail(e);}finally{saving=false;$('save-content').disabled=false;$('cancel-edit').disabled=false;}
+};
+$('content-kind').onchange=updateFormType;$('cancel-edit').onclick=()=>{resetForm();$('editor').open=false;};
+$('grade').onchange=render;function moveMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);selected=dayOnly(month);render();}
+$('prev').onclick=()=>moveMonth(-1);$('next').onclick=()=>moveMonth(1);$('today').onclick=()=>{month=new Date(today.getFullYear(),today.getMonth(),1);selected=dayOnly(today);render();};
+$('prev-week').onclick=()=>{week.setDate(week.getDate()-7);render();};$('next-week').onclick=()=>{week.setDate(week.getDate()+7);render();};$('this-week').onclick=()=>{week=dayOnly(base);render();};
+$('copy-uid').onclick=async()=>{if(!user)return;try{await navigator.clipboard.writeText(user.uid);report('Your Firebase UID was copied. Give it privately to the project owner.');}catch{report(`Your Firebase UID: ${user.uid}`);}};
+resetForm();render();
+if(demoMode){
+  const sampleNotices=[{date:offset(0),grade:'all',type:'School news',title:'A week of small discoveries',text:'Our autumn reading challenge is here. Read together for 15 minutes and add a leaf to your classroom reading tree.'},{date:offset(1),grade:'K',type:'Classroom',title:'Bring a favorite story',text:'Kindergarten students can bring a favorite picture book on Friday for our classroom story circle.'},{date:offset(2),grade:'3',type:'Reminder',title:'Nature walk permission slips',text:'Please return your signed permission slip by Friday. Pack comfortable shoes and a refillable water bottle.'},{date:offset(3),grade:'all',type:'Community',title:'Meet us at the book fair',text:'Families are welcome in the library after school. Every purchase supports new books for our classrooms.'},{date:offset(7),grade:'all',type:'Looking ahead',title:'Family learning afternoon',text:'Join us next week to explore student projects and meet the teaching team.'}];
+  const sampleEvents=[{date:offset(0),grade:'all',time:'8:30 AM',title:'Weekly assembly',place:'School hall'},{date:offset(2),grade:'3',time:'10:00 AM',title:'Nature explorers walk',place:'School garden'},{date:offset(3),grade:'all',time:'3:15 PM',title:'Family book fair',place:'Library'},{date:offset(4),grade:'K',time:'9:30 AM',title:'Story circle',place:'Kindergarten classrooms'},{date:offset(4),grade:'2',time:'1:00 PM',title:'Art & imagination',place:'Art studio'},{date:offset(8),grade:'1',time:'9:00 AM',title:'Number games',place:'Grade 1 classrooms'},{date:offset(9),grade:'4',time:'11:00 AM',title:'Science showcase',place:'Science room'},{date:offset(10),grade:'all',time:'2:00 PM',title:'Family learning afternoon',place:'All classrooms'},{date:offset(11),grade:'5',time:'10:00 AM',title:'Student leadership workshop',place:'School hall'}];
+  notices=sampleNotices.map((n,i)=>({...n,id:`demo-notice-${i}`,kind:'notices',body:n.text,createdAt:n.date.getTime()}));events=sampleEvents.map((e,i)=>({...e,id:`demo-event-${i}`,kind:'events',body:'',createdAt:e.date.getTime()}));
+  $('data-mode').textContent='Demo · mock data';$('mode-link').textContent='Live calendar';$('mode-link').href=location.pathname;report('Demo preview uses sample data only. It does not connect to Firebase or save changes.');refreshAccess();
+}else{
+  try{
+    const [appSdk,authSdk,databaseSdk]=await Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js')]);
+    sdk=databaseSdk;const firebaseConfig={
   "apiKey": "AIzaSyA2BXZXk1afRU-Lwadh_b5ekeXc1ARIEaQ",
   "authDomain": "ibshcal.firebaseapp.com",
   "databaseURL": "https://ibshcal-default-rtdb.firebaseio.com",
@@ -21,44 +189,21 @@ const firebaseConfig = {
   "appId": "1:938779191555:web:0f934e8b28d1b78ead2136",
   "measurementId": "G-J3JGWXTXXW"
 };
-const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getDatabase(app);
-const $ = id => document.getElementById(id);
-let admin = false;
-const cache = {notices:null, events:null};
-function report(error) { $('status').textContent = error.message || String(error); }
-$('login').onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(report);
-$('logout').onclick = () => signOut(auth).catch(report);
-onIdTokenChanged(auth, async user => {
-  admin = false; $('editor').hidden = true;
-  $('login').hidden = !!user; $('logout').hidden = !user;
-  $('user').textContent = user?.displayName || user?.email || '';
-  try { const token = user ? await user.getIdTokenResult() : null; if(auth.currentUser !== user) return; admin = token?.claims.admin === true; $('editor').hidden = !admin; }
-  catch(error) { report(error); }
-  for (const kind of ['notices','events']) if(cache[kind] !== null) render(kind);
-});
-function render(kind) {
-  const container = $(kind); container.replaceChildren();
-  const entries = Object.entries(cache[kind]);
-  entries.sort((a,b) => kind === 'events' ? a[1].date.localeCompare(b[1].date) : b[1].createdAt-a[1].createdAt);
-  if(!entries.length) { container.textContent = `No ${kind} yet.`; return; }
-  for(const [id,item] of entries) {
-    const article = document.createElement('article'), title = document.createElement('h3'), body = document.createElement('p');
-    title.textContent = item.title; body.textContent = item.body; article.append(title);
-    if(kind === 'events') { const date = document.createElement('time'); date.dateTime = item.date; date.textContent = item.date; article.append(date); }
-    article.append(body);
-    if(admin) { const button = document.createElement('button'); button.textContent = 'Delete'; button.onclick = async () => { if(!confirm(`Delete “${item.title}”?`)) return; button.disabled = true; try { await remove(ref(db,`${kind}/${id}`)); } catch(error) { report(error); button.disabled = false; } }; article.append(button); }
-    container.append(article);
-  }
+    const app=appSdk.initializeApp(firebaseConfig);auth=authSdk.getAuth(app);db=sdk.getDatabase(app);$('login').disabled=false;
+    $('login').onclick=()=>{const provider=new authSdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});authSdk.signInWithPopup(auth,provider).catch(fail);};
+    $('logout').onclick=()=>authSdk.signOut(auth).catch(fail);
+    authSdk.onAuthStateChanged(auth,next=>{
+      if(stopMembership){stopMembership();stopMembership=null;}user=next;role=null;resetForm();refreshAccess();
+      if(!next)return;const uid=next.uid;
+      stopMembership=sdk.onValue(sdk.ref(db,`members/${uid}`),snapshot=>{if(user?.uid!==uid)return;const v=snapshot.val();role=['admin','contributor'].includes(v?.role)?v.role:null;refreshAccess();},error=>{if(user?.uid!==uid)return;role=null;refreshAccess();fail(error);});
+    });
+    for(const kind of ['notices','events'])sdk.onValue(sdk.ref(db,kind),snapshot=>{
+      const records=Object.entries(snapshot.val()||{}).map(([id,v])=>normalizeRecord(kind,id,v)).filter(Boolean);
+      if(kind==='notices')notices=records;else events=records;loaded[kind]=true;errors[kind]=false;
+      $('data-mode').textContent=loaded.notices&&loaded.events?'Live calendar':'Loading…';render();
+    },error=>{loaded[kind]=true;errors[kind]=true;if(kind==='notices')notices=[];else events=[];$('data-mode').textContent='Connection needs attention';render();fail(error);});
+  }catch(error){for(const kind of ['notices','events']){loaded[kind]=true;errors[kind]=true;}$('data-mode').textContent='Connection unavailable';render();report('The calendar could not connect. Check your internet connection, or open Demo preview to view the layout.');}
 }
-for(const kind of ['notices','events']) onValue(ref(db,kind), snapshot => { cache[kind] = snapshot.val() || {}; render(kind); }, error => { $(kind).textContent = `Unable to load ${kind}.`; report(error); });
-for(const [formId,kind] of [['noticeForm','notices'],['eventForm','events']]) $(formId).onsubmit = async event => {
-  event.preventDefault(); const form = event.currentTarget, button = form.querySelector('button');
-  if(!admin || !auth.currentUser) return report('Administrator access required.');
-  const data = new FormData(form), title = data.get('title').trim(), body = data.get('body').trim();
-  if(!title || !body) return report('Enter a title and message.');
-  const item = {title,body,createdAt:serverTimestamp(),authorUid:auth.currentUser.uid};
-  if(kind === 'events') item.date = data.get('date');
-  button.disabled = true;
-  try { await set(push(ref(db,kind)),item); form.reset(); $('status').textContent = 'Published.'; } catch(error) { report(error); } finally { button.disabled = false; }
-};
-</script></html>
+
+</script>
+</body></html>
