@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "firebase emulators:exec --only database --project demo-ibshcal \"node --test tests/permissions.test.js\""
+    "test": "npm run test:calendar && npm run test:rules",
+    "test:calendar": "node --test tests/calendar.test.js",
+    "test:rules": "firebase emulators:exec --only database --project demo-ibshcal \"node --test tests/permissions.test.js\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "4.0.1",
